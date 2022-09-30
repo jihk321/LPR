@@ -47,12 +47,9 @@ for file in sub_dir :
         img = Image.open(file + '\\' + i)
         w, h = img.size
         img_size = w* h
-        name_count = i.count('_')
-        if 'one_line' in file :
-            if  '_' in i[-6] : 
-                label = i.split('_')
-                new_row = {'번호판' : label[1] ,'사진크기' : img_size ,'날짜' : label[0]+'_' ,'경로' : file, '기타' : '_'+label[2]}
-        else : new_row = {'번호판' : i[16:-4] ,'사진크기' : img_size ,'날짜' : i[:16] ,'경로' : file, '기타' : ''}
+        if '_' in i[16:-4] :
+            new_row = {'번호판' : i[16:-6] ,'사진크기' : img_size ,'날짜' : i[:16] ,'경로' : file, '기타' : i[-6:]}
+        else :new_row = {'번호판' : i[16:-4] ,'사진크기' : img_size ,'날짜' : i[:16] ,'경로' : file, '기타' : ''}
         # check = list(i[16:-4])
         # print(check)
         # if 0 <= int(check[0]) <= 9 and 0 <= int(check[1]) <= 9 and letter in str(check[2]) and 0 <= int(check[3]) <= 9 and 0 <= int(check[4]) <9 and 0 <= int(check[5]) <= 9 and 0 <= int(check[6]) <= 9:
@@ -67,9 +64,9 @@ sub_data.rename(columns= {0: '중복'}, inplace= True)
 for idx, row in sub_data.iterrows():
     path = sub_data.iloc[idx]['경로'] 
     if row['기타'] != NULL :
-        img_path = os.path.join(row['경로'],row['날짜']) + row['번호판'] + str(row['기타']) + '.jpg'
+        img_path = os.path.join(row['경로'],row['날짜']) + row['번호판'] + row['기타']
         print(row['경로'],row['날짜'],row['번호판'],row['기타'])
-        copy_name = row['번호판'] + ['날짜'] + str(row['기타']) + '.jpg'
+        copy_name = row['번호판'] + '.jpg'
     else : 
         img_path = os.path.join(row['경로'],row['날짜']) + row['번호판'] + '.jpg'
         copy_name = row['번호판'] + ['날짜'] + '.jpg'
