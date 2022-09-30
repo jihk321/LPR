@@ -1,6 +1,9 @@
-from operator import sub
+from asyncio.windows_events import NULL
+from PIL import Image
 import os
+import numpy as np
 import pandas as pd
+import shutil
 
 main_dir = '라벨링'
 sub_dir = []
@@ -16,15 +19,77 @@ def listdirs(main_dir) :
 listdirs(main_dir) #main_dir 하위 폴더 리스트 
 # print(sub_dir)
 
-f = open(now_path + '\\' + '데이터필터링.csv', "w", encoding='utf-8-sig')
-f.write('파일경로,날짜,파일명\n')
+### 작업한 폴더인지 체크
+# if os.path.isfile('log.txt') : 
+#         with open('log.txt') as f:
+#             folder = f.readlines()
+#             sub_dir = set(sub_dir) - set(folder)
+### 엑셀파일 
+main_data = pd.DataFrame(columns={'번호판','사진크기','날짜','경로','기타'})
+if os.path.isfile(now_path + '\\' + '데이터필터링.csv') : main_csv = pd.read_csv('데이터필터링.csv')  #open(now_path + '\\' + '데이터필터링.csv', "a", encoding='utf-8-sig')
+else : main_data.to_csv('데이터필터링.csv',encoding="utf-8-sig", index=False)
+### 데이터셋 폴더 
+dataset = os.path.join(now_path,'dataset')
+one_line = os.path.join(dataset,'one_line')
+two_lines = os.path.join(dataset,'two_lines')
+if not os.path.isdir(dataset): os.mkdir(dataset)
+if not os.path.isdir(one_line): os.mkdir(one_line)
+if not os.path.isdir(two_lines): os.mkdir(two_lines)
+if not os.path.isdir(one_line + '\\' + 'dupli'): os.mkdir(one_line + '\\' + 'dupli')
+if not os.path.isdir(two_lines + '\\' + 'dupli'): os.mkdir(two_lines + '\\' + 'dupli')
 
+sub_data = pd.DataFrame(columns={'번호판','사진크기','날짜','경로','기타'})
+csv_data = {}
 for file in sub_dir :
     file_list = os.listdir(file)
     file_jpg = [file for file in file_list if file.endswith('.jpg')]
     for i in file_jpg :
-        check = list(i[16:-4])
+        img = Image.open(file + '\\' + i)
+        w, h = img.size
+        img_size = w* h
+        name_count = i.count('_')
+        if 'one_line' in file :
+            if  '_' in i[-6] : 
+                label = i.split('_')
+                new_row = {'번호판' : label[1] ,'사진크기' : img_size ,'날짜' : label[0]+'_' ,'경로' : file, '기타' : '_'+label[2]}
+        else : new_row = {'번호판' : i[16:-4] ,'사진크기' : img_size ,'날짜' : i[:16] ,'경로' : file, '기타' : ''}
+        # check = list(i[16:-4])
         # print(check)
         # if 0 <= int(check[0]) <= 9 and 0 <= int(check[1]) <= 9 and letter in str(check[2]) and 0 <= int(check[3]) <= 9 and 0 <= int(check[4]) <9 and 0 <= int(check[5]) <= 9 and 0 <= int(check[6]) <= 9:
-        f.write(file + ',' + i[0:16] + ',' + i[16:-4]+ '\n')
-f.close()
+        # print(f'번호 {i[16:-4]} 사진크기{img_size} 날짜{i[:16]} 경로{file}')
+        
+        sub_data.loc[len(sub_data)] = new_row
+sub_data = sub_data.sort_values(by=['번호판','사진크기'],ascending=False)
+dup = sub_data.duplicated(['번호판'], keep='first')           
+sub_data = pd.concat([sub_data, dup], axis=1)
+sub_data.rename(columns= {0: '중복'}, inplace= True)
+
+for idx, row in sub_data.iterrows():
+    path = sub_data.iloc[idx]['경로'] 
+    if row['기타'] != NULL :
+        img_path = os.path.join(row['경로'],row['날짜']) + row['번호판'] + str(row['기타']) + '.jpg'
+        print(row['경로'],row['날짜'],row['번호판'],row['기타'])
+        copy_name = row['번호판'] + ['날짜'] + str(row['기타']) + '.jpg'
+    else : 
+        img_path = os.path.join(row['경로'],row['날짜']) + row['번호판'] + '.jpg'
+        copy_name = row['번호판'] + ['날짜'] + '.jpg'
+    
+    if row['중복'] == False :
+        sub_data.loc[idx,'중복'] = '메인' 
+        if 'two_lines' in path : shutil.copy2(img_path,two_lines + '\\' + copy_name)
+        else: shutil.copy2(img_path,one_line + '\\' + copy_name)
+
+    else : 
+        sub_data.loc[idx,'중복'] = '서브' 
+        if 'two_lines' in path : shutil.copy2(img_path,two_lines + '\\' + 'dupli' + '\\' + copy_name)
+        else: shutil.copy2(img_path,one_line + '\\' + 'dupli' + '\\' + + copy_name)
+
+sub_data.to_csv('데이터필터링.csv',encoding="utf-8-sig", index=False)
+# result = pd.concat([main_data,sub_data], ignore_index=True)
+
+## 로그 작성
+# log = open(now_path + '\\'+'log.txt', 'a', encoding='utf-8')
+# for folderlist in sub_dir :
+#     log.write(f'{folderlist}\n')
+# log.close()
+print('작업 완료')

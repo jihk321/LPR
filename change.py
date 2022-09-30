@@ -27,7 +27,7 @@ for idx, row in files.iterrows():
     if folderfile[0] != csv_num :
         error_check+=1
         # print(f'폴더파일명: {folderfile[0]} \n엑셀파일명: {csv_num}')
-if error_check > 551 : 
+if error_check > 10 : 
     print(error_check)
     file_jpg = natsort.natsorted(file_jpg)
 if len(file_jpg) != length_check : print(f'엑셀파일 수정, 파일개수 {len(file_jpg)} 엑셀 행수 : {length_check}')
