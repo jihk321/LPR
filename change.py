@@ -3,8 +3,8 @@ import shutil
 import natsort
 import pandas as pd
 
-now_path = r'C:\Users\goback\Downloads\lpr\라벨링\exp4\one_line'
-# now_path = r'C:\Users\goback\Downloads\lpr\라벨링\exp22\two_lines'
+# now_path = r'C:\Users\goback\Downloads\lpr\exp27\one_line'
+now_path = r'C:\Users\goback\Downloads\lpr\exp27\two_lines'
 file_path = now_path + '\\trash'
 file_list = os.listdir(now_path)
 file_name = [file for file in file_list if file.endswith('.csv')]
@@ -26,9 +26,9 @@ for idx, row in files.iterrows():
     csv_num = row[colum[0]] + row[colum[1]] 
     if folderfile[0] != csv_num :
         error_check+=1
-        # print(f'폴더파일명: {folderfile[0]} \n엑셀파일명: {csv_num}')
+        print(f'폴더파일명: {folderfile[0]} \n엑셀파일명: {csv_num}')
 if error_check > 10 : 
-    print(error_check)
+    print('에러 :', error_check)
     file_jpg = natsort.natsorted(file_jpg)
 if len(file_jpg) != length_check : print(f'엑셀파일 수정, 파일개수 {len(file_jpg)} 엑셀 행수 : {length_check}')
 
