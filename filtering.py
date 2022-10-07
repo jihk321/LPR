@@ -47,9 +47,9 @@ for file in sub_dir :
         img = Image.open(file + '\\' + i)
         w, h = img.size
         img_size = w* h
-        if '_' in i[16:-4] :
+        if '_' in i[-6:-4] :
             new_row = {'번호판' : i[16:-6] ,'사진크기' : img_size ,'날짜' : i[:16] ,'경로' : file, '기타' : i[-6:]}
-        else :new_row = {'번호판' : i[16:-4] ,'사진크기' : img_size ,'날짜' : i[:16] ,'경로' : file, '기타' : ''}
+        else :new_row = {'번호판' : i[16:-4] ,'사진크기' : img_size ,'날짜' : i[:16] ,'경로' : file, '기타' : '.jpg'}
         # check = list(i[16:-4])
         # print(check)
         # if 0 <= int(check[0]) <= 9 and 0 <= int(check[1]) <= 9 and letter in str(check[2]) and 0 <= int(check[3]) <= 9 and 0 <= int(check[4]) <9 and 0 <= int(check[5]) <= 9 and 0 <= int(check[6]) <= 9:
@@ -60,28 +60,31 @@ sub_data = sub_data.sort_values(by=['번호판','사진크기'],ascending=False)
 dup = sub_data.duplicated(['번호판'], keep='first')           
 sub_data = pd.concat([sub_data, dup], axis=1)
 sub_data.rename(columns= {0: '중복'}, inplace= True)
+sub_data.to_csv('데이터필터링.csv',encoding="utf-8-sig", index=False)
 
+log = open(now_path + '\\'+'log.txt','w',encoding='utf-8-sig')
 for idx, row in sub_data.iterrows():
     path = sub_data.iloc[idx]['경로'] 
-    if row['기타'] != NULL :
+
+    if row['기타'] == '.jpg' :
         img_path = os.path.join(row['경로'],row['날짜']) + row['번호판'] + row['기타']
         print(row['경로'],row['날짜'],row['번호판'],row['기타'])
         copy_name = row['번호판'] + '.jpg'
     else : 
-        img_path = os.path.join(row['경로'],row['날짜']) + row['번호판'] + '.jpg'
-        copy_name = row['번호판'] + ['날짜'] + '.jpg'
+        img_path = os.path.join(row['경로'],row['날짜']) + row['번호판']  + row['기타']
+        copy_name = row['번호판'] + row['날짜'] + '.jpg'
     
     if row['중복'] == False :
         sub_data.loc[idx,'중복'] = '메인' 
-        if 'two_lines' in path : shutil.copy2(img_path,two_lines + '\\' + copy_name)
+        if path in 'two_lines': shutil.copy2(img_path,two_lines + '\\' + copy_name)
         else: shutil.copy2(img_path,one_line + '\\' + copy_name)
 
-    else : 
-        sub_data.loc[idx,'중복'] = '서브' 
-        if 'two_lines' in path : shutil.copy2(img_path,two_lines + '\\' + 'dupli' + '\\' + copy_name)
-        else: shutil.copy2(img_path,one_line + '\\' + 'dupli' + '\\' + + copy_name)
+    # else : 
+    #     sub_data.loc[idx,'중복'] = '서브' 
+    #     if path in 'two_lines' : shutil.copy2(img_path,two_lines + '\\' + 'dupli' + '\\' + copy_name)
+    #     else: shutil.copy2(img_path,one_line + '\\' + 'dupli' + '\\' + copy_name)
 
-sub_data.to_csv('데이터필터링.csv',encoding="utf-8-sig", index=False)
+
 # result = pd.concat([main_data,sub_data], ignore_index=True)
 
 ## 로그 작성

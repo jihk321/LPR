@@ -3,16 +3,16 @@ import shutil
 import natsort
 import pandas as pd
 
-# now_path = r'C:\Users\goback\Downloads\lpr\exp27\one_line'
-now_path = r'C:\Users\goback\Downloads\lpr\exp27\two_lines'
+now_path = r'C:\Users\goback\Downloads\lpr\라벨링\exp26\one_line'
+# now_path = r'C:\Users\goback\Downloads\lpr\exp27\two_lines'
 file_path = now_path + '\\trash'
 file_list = os.listdir(now_path)
 file_name = [file for file in file_list if file.endswith('.csv')]
 file_jpg = [file for file in file_list if file.endswith('.jpg')]
-# file_jpg = natsort.natsorted(file_jpg)'
+# file_jpg = natsort.natsorted(file_jpg)
 check = False
 files = pd.read_csv(now_path + '\\' +file_name[0], header=0, sep=',')
-# files = files.sort_values([colum[0],'흥'])
+# files = files.sort_values(by= ['날짜', '흥'], ascending=[True,True])
 m_cnt, e_cnt, right,n_cnt = 0,0,0,0 # 삭제한 파일 갯수, 수정한 파일 갯수, 정답, 넘버링
 edit, move_name, length_check, error_check = 0,0,0,0
 colum = []
@@ -20,6 +20,10 @@ colum = []
 if '수정파일명' in files.columns : colum = ['날짜', '생성파일명', '수정파일명', '검증']
 else : colum = ['날짜', '흥', '정답', '검증']
 
+# log = open(now_path + '\\'+'log.txt','w',encoding='utf-8-sig')
+# for i in file_jpg :
+#     log.write(i+ '\n')
+# log.close()
 for idx, row in files.iterrows():
     length_check = length_check + 1 
     folderfile = file_jpg[idx].split('.')
@@ -34,31 +38,32 @@ if len(file_jpg) != length_check : print(f'엑셀파일 수정, 파일개수 {le
 
 if not os.path.isdir(file_path): os.mkdir(file_path)
 
-for idx, row in files.iterrows():
-    
-    if type(row[colum[2]]) == float : 
-        move_name = file_jpg[idx]
-        try :
-            shutil.move(now_path +'\\'+ move_name, file_path +'\\'+ move_name)
-            m_cnt = m_cnt + 1
-        except Exception as e:
-            print(f'error : {e} / {move_name}')
-        finally: continue
-    elif row[colum[3]] == 1 : 
-        right+=1
-        continue 
-    elif row[colum[3]] == 0 and type(row[colum[2]]) == str :
-        origin = file_jpg[idx]
-        edit = row[colum[0]] + row[colum[2]] + '.jpg'
-        while os.path.isfile(now_path + '\\' + edit) :
-            n_cnt+=1
-            edit = row[colum[0]] + row[colum[2]] + '_' + str(n_cnt) + '.jpg'
-            # print(edit)
-        try:
-            os.rename(now_path+'\\'+origin,now_path+'\\'+edit)
-            n_cnt = 0
-        except Exception as e: print(e)
-        finally : e_cnt = e_cnt + 1 
+if error_check < 10 :
+    for idx, row in files.iterrows():
+        
+        if type(row[colum[2]]) == float : 
+            move_name = file_jpg[idx]
+            try :
+                shutil.move(now_path +'\\'+ move_name, file_path +'\\'+ move_name)
+                m_cnt = m_cnt + 1
+            except Exception as e:
+                print(f'error : {e} / {move_name}')
+            finally: continue
+        elif row[colum[3]] == 1 : 
+            right+=1
+            continue 
+        elif row[colum[3]] == 0 and type(row[colum[2]]) == str :
+            origin = file_jpg[idx]
+            edit = row[colum[0]] + row[colum[2]] + '.jpg'
+            while os.path.isfile(now_path + '\\' + edit) :
+                n_cnt+=1
+                edit = row[colum[0]] + row[colum[2]] + '_' + str(n_cnt) + '.jpg'
+                # print(edit)
+            try:
+                os.rename(now_path+'\\'+origin,now_path+'\\'+edit)
+                n_cnt = 0
+            except Exception as e: print(e)
+            finally : e_cnt = e_cnt + 1 
 
 def remove():
     move_file = pd.DataFrame(files[files[colum[2]].isnull()])
