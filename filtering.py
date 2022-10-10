@@ -1,4 +1,3 @@
-from asyncio.windows_events import NULL
 from PIL import Image
 import os
 import numpy as np
@@ -64,20 +63,20 @@ sub_data.to_csv('데이터필터링.csv',encoding="utf-8-sig", index=False)
 
 log = open(now_path + '\\'+'log.txt','w',encoding='utf-8-sig')
 for idx, row in sub_data.iterrows():
-    path = sub_data.iloc[idx]['경로'] 
-
-    if row['기타'] == '.jpg' :
-        img_path = os.path.join(row['경로'],row['날짜']) + row['번호판'] + row['기타']
-        print(row['경로'],row['날짜'],row['번호판'],row['기타'])
-        copy_name = row['번호판'] + '.jpg'
-    else : 
-        img_path = os.path.join(row['경로'],row['날짜']) + row['번호판']  + row['기타']
-        copy_name = row['번호판'] + row['날짜'] + '.jpg'
+    path = row['경로'] 
     
     if row['중복'] == False :
         sub_data.loc[idx,'중복'] = '메인' 
-        if path in 'two_lines': shutil.copy2(img_path,two_lines + '\\' + copy_name)
-        else: shutil.copy2(img_path,one_line + '\\' + copy_name)
+        copy_name = row['번호판'] + '.jpg'
+        img_path = os.path.join(row['경로'],row['날짜']) + row['번호판'] + row['기타']
+
+        if 'two_lines' in path : 
+            shutil.copy2(img_path,two_lines + '\\' + copy_name)
+            log.write(img_path + '\t' + two_lines + '\t' + copy_name + '\n')
+        else: 
+            shutil.copy2(img_path,one_line + '\\' + copy_name)
+            log.write(img_path + '\t' + one_line + '\t' + copy_name + '\n')
+log.close()
 
     # else : 
     #     sub_data.loc[idx,'중복'] = '서브' 
