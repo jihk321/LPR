@@ -26,28 +26,36 @@ for folder in sub_dir :
     # print(len(file_jpg))
     for pic in file_jpg :
         pic = pic[16:-4]
-        if '_' in pic[-2:] :
-            pic = pic.split('_')[0]
+        if '_' in pic[-3:] :
+            num = pic.count('_')
+            if num > 1 : 
+                char = pic.split('_')
+                pic = char[0] + '_'+ char[1]
+            else : pic = pic.split('_')[0]
         folder_file.append(pic) 
-        allfile.append(pic)
+        
     result = list(set(folder_file))  #리스트 중복 제거
-    folder_data[folder_name] = result # 
+    allfile = allfile + result
+    folder_data[folder_name] = sorted(result) # 
 
-allfile = list(set(allfile))
 all_data = pd.DataFrame({'all' : allfile}).sort_values('all') #all 기준으로 정렬후 데이터프레임 생성
 all_data = all_data.reset_index(drop=True) # 인덱스 리셋
 
 sheet1 = pd.DataFrame(dict([ (k,pd.Series(v)) for k,v in folder_data.items()]))
-df2 = pd.concat([sheet1,all_data], axis=1)
+# df2 = pd.concat([sheet1,all_data], axis=1)
 # sheet2 = sheet1.groupby('exp20_one_line').count()
 # print(df2.count())
 # print(df2.value_counts())
 # df.to_excel('data.csv',encoding="utf-8-sig", index=False, sheet_name='data')
 
-print(df2['all'].unique())
-print(df2['all'].value_counts())
+#'원 번호판' : all_data['all'].unique() ,
+datas = { '중복' : all_data['all'].value_counts()}
+sheet2 = pd.DataFrame(datas)
+# print(df2['all'].unique())
+# print(df2['all'].value_counts())
 writer = pd.ExcelWriter('data.xlsx')
 sheet1.to_excel(writer, sheet_name='data')
+sheet2.to_excel(writer, sheet_name='datas')
 # all_data['all'].unique().to_excel(writer, sheet_name= 'count')
 
 writer.save()
