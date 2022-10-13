@@ -2,7 +2,7 @@ from email.mime import image
 import os
 from PIL import Image
 
-file_path = r'C:\Users\goback\Downloads\lpr\라벨링\exp18\one_line'
+file_path = r'C:\Users\goback\Downloads\lpr\lpr\two_lines'
 file_list = os.listdir(file_path)
 file_jpg = [file for file in file_list if file.endswith('.jpg')]
 # save_path = file_path + '//save'
