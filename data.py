@@ -2,7 +2,8 @@ import os
 import pandas as pd
 
 main_dir = '라벨링'
-sub_dir, allfile = [],[]
+sub_dir, allfile = [],[] #sub_dir : 하위폴더, allfile 모든 jpg 파일리스트
+folder_list, dup, unique, tog = [],[],[],[] # folder_list 원 폴더 dup 중복개수, unique 단일, 종합 
 now_path = os.getcwd()
 letter = '가나다라마거너더러머버서어저고노도로모보소오조구누두루무부수우주아바사자배하허호'
 
@@ -21,7 +22,7 @@ for folder in sub_dir :
 
     folder_name = folder.split('\\')
     folder_name = folder_name[-2] + '_'+ folder_name[-1]
-
+    
     folder_file = []
     # print(len(file_jpg))
     for pic in file_jpg :
@@ -38,10 +39,27 @@ for folder in sub_dir :
     allfile = allfile + result
     folder_data[folder_name] = sorted(result) # 
 
-all_data = pd.DataFrame({'all' : allfile}).sort_values('all') #all 기준으로 정렬후 데이터프레임 생성
+all_data = pd.DataFrame({'번호판' : allfile}).sort_values('번호판') #all 기준으로 정렬후 데이터프레임 생성
 all_data = all_data.reset_index(drop=True) # 인덱스 리셋
 
 sheet1 = pd.DataFrame(dict([ (k,pd.Series(v)) for k,v in folder_data.items()]))
+dup_data = all_data.value_counts().to_frame()
+# datas = { '중복' : dup_data}
+# sheet2 = pd.DataFrame(datas, )
+
+print('s')
+for name in sub_dir:
+    name = name.split('\\')
+    
+    col_name = name[-2] + '_' + name[-1]
+    folder_name = name[-2]
+    if name not in folder_list : folder_list.append(folder_name)
+    
+    col_data = sheet1[col_name]
+    # print(col_data)
+
+
+        
 # df2 = pd.concat([sheet1,all_data], axis=1)
 # sheet2 = sheet1.groupby('exp20_one_line').count()
 # print(df2.count())
@@ -49,13 +67,12 @@ sheet1 = pd.DataFrame(dict([ (k,pd.Series(v)) for k,v in folder_data.items()]))
 # df.to_excel('data.csv',encoding="utf-8-sig", index=False, sheet_name='data')
 
 #'원 번호판' : all_data['all'].unique() ,
-datas = { '중복' : all_data['all'].value_counts()}
-sheet2 = pd.DataFrame(datas)
+
 # print(df2['all'].unique())
 # print(df2['all'].value_counts())
+
+
 writer = pd.ExcelWriter('data.xlsx')
 sheet1.to_excel(writer, sheet_name='data')
-sheet2.to_excel(writer, sheet_name='datas')
-# all_data['all'].unique().to_excel(writer, sheet_name= 'count')
-
+dup_data.to_excel(writer, sheet_name='datas')
 writer.save()
