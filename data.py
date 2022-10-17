@@ -1,5 +1,7 @@
 import os
+from numpy import dtype
 import pandas as pd
+from re import compile, split
 
 main_dir = '라벨링'
 sub_dir, allfile = [],[] #sub_dir : 하위폴더, allfile 모든 jpg 파일리스트
@@ -9,12 +11,14 @@ letter = '가나다라마거너더러머버서어저고노도로모보소오조�
 
 folder_data = {}
 def listdirs(main_dir) :
-    for i in os.scandir(main_dir) :
+    for i in os.scandir(main_dir):
         if i.is_dir(): 
             listdirs(i)
             if 'one_line' in i.path or 'two_lines' in i.path:
                 if 'trash' not in i.path : sub_dir.append(os.path.join(now_path,i.path))
 listdirs(main_dir) #main_dir 하위 폴더 리스트 
+dre = compile(r'(\d+)') 
+sub_dir.sort(key=lambda l: [int(s) if s.isdigit() else s.lower() for s in split(dre,l)]) #windows 폴더 셋팅과 맞게 정렬
 
 for folder in sub_dir : 
     file_list = os.listdir(folder)
@@ -42,24 +46,42 @@ for folder in sub_dir :
 all_data = pd.DataFrame({'번호판' : allfile}).sort_values('번호판') #all 기준으로 정렬후 데이터프레임 생성
 all_data = all_data.reset_index(drop=True) # 인덱스 리셋
 
-sheet1 = pd.DataFrame(dict([ (k,pd.Series(v)) for k,v in folder_data.items()]))
+sheet1 = pd.DataFrame(dict([ (k,pd.Series(v,dtype=pd.StringDtype())) for k,v in folder_data.items()]))
 dup_data = all_data.value_counts().to_frame()
+dup_data.columns = ['중복개수']
 # datas = { '중복' : dup_data}
 # sheet2 = pd.DataFrame(datas, )
+folders = []
 
-print('s')
 for name in sub_dir:
     name = name.split('\\')
     
     col_name = name[-2] + '_' + name[-1]
     folder_name = name[-2]
-    if name not in folder_list : folder_list.append(folder_name)
+    folder_list.append(col_name)
+    if folder_name not in folders : folders.append(folder_name)
     
-    col_data = sheet1[col_name]
+    dup_count, uni_count = 0,0 # 중복개수, 단일 개수 
+     
+    col_data = sheet1[col_name].dropna().to_list()
+
+    for search in col_data :
+        if search in tog : dup_count += 1
+        else : 
+            uni_count += 1 
+            tog.append(search)
+
+    dup.append(dup_count)
+    unique.append(uni_count)
     # print(col_data)
+    
+    # for count in range(len(folders)) : 
+    #     if folder_list[count] in folders 
 
+counting = pd.DataFrame(zip(folder_list,dup,unique), columns=['폴더명','중복개수','단일데이터'])
 
-        
+# sheet2 = pd.concat([counting,dup_data], axis=0)
+
 # df2 = pd.concat([sheet1,all_data], axis=1)
 # sheet2 = sheet1.groupby('exp20_one_line').count()
 # print(df2.count())
@@ -74,5 +96,6 @@ for name in sub_dir:
 
 writer = pd.ExcelWriter('data.xlsx')
 sheet1.to_excel(writer, sheet_name='data')
-dup_data.to_excel(writer, sheet_name='datas')
+counting.to_excel(writer, sheet_name='datas')
+dup_data.to_excel(writer,sheet_name='alldata')
 writer.save()
