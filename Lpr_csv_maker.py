@@ -2,7 +2,7 @@ from datetime import datetime
 import os, glob
 
 # file_path = r'C:\Users\goback\Downloads\lpr\exp29\one_line'
-file_path = r'C:\Users\goback\Downloads\lpr\라벨링\exp31\two_lines'
+file_path = r'C:\Users\goback\Downloads\lpr\라벨링\exp32\two_lines'
 file_list = os.listdir(file_path)
 
 cnt=0

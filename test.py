@@ -7,8 +7,8 @@ lpr = '153호2115'
 letter = '가나다라마거너더러머버서어저고노도로모보소오조구누두루무부수우주아바사자배하허호'
 lpr_exam = list(lpr)
 
-path = r'C:\Users\goback\Downloads\lpr\라벨링\exp29\one_line'
-img_name = '20220930-122457_52나0581.jpg'
+path = r'C:\Users\goback\Downloads\lpr\라벨링\exp32\one_line'
+img_name = '20221018-175744_343로7595.jpg'
 
 img_path = os.path.join(path,img_name)
 img_array = np.fromfile(img_path, np.uint8)
@@ -19,7 +19,7 @@ blur = cv2.GaussianBlur(src, (3,3),0)
 # canny = cv2.Canny(blur, 100, 200)
 thresh = cv2.threshold(src,0,255,cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
 
-kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
+kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1,1))
 opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=1)
 invert = 255 - opening
 

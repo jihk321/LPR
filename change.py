@@ -3,8 +3,8 @@ import shutil
 import natsort
 import pandas as pd
 
-now_path = r'C:\Users\goback\Downloads\lpr\라벨링\exp31\one_line'
-now_path = r'C:\Users\goback\Downloads\lpr\라벨링\exp31\two_lines'
+now_path = r'C:\Users\goback\Downloads\lpr\라벨링\exp32\one_line'
+now_path = r'C:\Users\goback\Downloads\lpr\라벨링\exp32\two_lines'
 file_path = now_path + '\\trash'
 file_list = os.listdir(now_path)
 file_name = [file for file in file_list if file.endswith('.csv')]
